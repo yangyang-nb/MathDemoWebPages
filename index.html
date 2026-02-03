@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的个人网站收藏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 2rem;
+        }
+
+        /* 表单样式：核心修改 - 恢复宽布局，不缩小（移除固定宽度限制） */
+        .site-form {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            margin-top: 3rem;
+            /* 移除固定max-width，恢复宽布局（填满容器最大宽度1200px，小屏幕自适应） */
+            width: 100%;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #34495e;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="url"],
+        input[type="file"] {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid #dce4ec;
+            border-radius: 6px;
+            font-size: 1rem;
+            color: #2c3e50;
+        }
+
+        input[type="text"]:focus,
+        input[type="url"]:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+        }
+
+        button {
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        /* 图片预览样式 */
+        .preview-img {
+            width: 120px;
+            height: 80px;
+            border: 1px dashed #dce4ec;
+            border-radius: 6px;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .preview-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        /* 网站卡片列表样式 - 保留：窄宽度（600px）、原始高度（200px） */
+        .site-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem; /* 卡片上下间距 */
+            align-items: center; /* 让卡片居中展示 */
+        }
+
+        .site-card {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            width: 600px; /* 保留窄宽度，不改动 */
+            height: 200px; /* 保留原始高度，不改动 */
+            /* 适配小屏幕，宽度不超过视口 */
+            max-width: 90vw;
+        }
+
+        .site-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 删除按钮样式 */
+        .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: rgba(231, 76, 60, 0.9);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            z-index: 10;
+            padding: 0;
+        }
+
+        .delete-btn:hover {
+            background-color: rgba(192, 57, 43, 0.9);
+        }
+
+        .site-card:hover .delete-btn {
+            display: flex;
+        }
+
+        /* 保留：窄卡片内部图片适配样式 */
+        .card-img {
+            width: 250px; /* 适配600px窄卡片，不改动 */
+            height: 100%; /* 垂直方向填满卡片，保留原始高度 */
+            object-fit: cover; /* 防止图片变形 */
+        }
+
+        /* 保留：窄卡片内部内容适配样式 */
+        .card-content {
+            padding: 1.5rem; /* 适配窄卡片，不改动 */
+            flex: 1; /* 占满卡片剩余宽度 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* 文字垂直居中 */
+        }
+
+        .card-title {
+            font-size: 1.6rem; /* 适配窄卡片，不改动 */
+            color: #2c3e50;
+            margin-bottom: 0.8rem; /* 微调间距，更协调 */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-url {
+            font-size: 1rem; /* 适配窄卡片，不改动 */
+            color: #7f8c8d;
+            word-break: break-all;
+        }
+
+        /* 空状态提示：保留和卡片一致的窄宽度 */
+        .empty-tip {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            padding: 3rem 0;
+            width: 600px; /* 和卡片宽度一致，不改动 */
+            max-width: 90vw;
+        }
+
+        /* 响应式适配：同步优化，表单宽布局在手机端自适应 */
+        @media (max-width: 768px) {
+            .site-card {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .card-img {
+                width: 100%;
+                height: 200px; /* 保留手机端原始图片高度 */
+            }
+
+            .card-title {
+                font-size: 1.4rem;
+            }
+
+            .card-content {
+                padding: 1.5rem;
+            }
+
+            /* 手机端表单自动适配屏幕宽度，无需额外修改 */
+            .site-form {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>我的个人网站收藏</h1>
+
+        <!-- 网站列表展示（上）：窄宽度（600px）、居中单列、保留原始高度 -->
+        <div class="site-list" id="siteList">
+            <div class="empty-tip">暂无收藏网站，添加后将展示在这里</div>
+        </div>
+
+        <!-- 添加网站表单（下）：宽布局（不缩小），填满容器宽度 -->
+        <div class="site-form">
+            <div class="form-group">
+                <label for="siteName">网站名称</label>
+                <input type="text" id="siteName" placeholder="请输入网站名称（如：我的个人博客）" required>
+            </div>
+
+            <div class="form-group">
+                <label for="siteUrl">网站网址</label>
+                <input type="url" id="siteUrl" placeholder="请输入完整网址（如：https://www.example.com）" required>
+            </div>
+
+            <div class="form-group">
+                <label for="siteImg">网站配图</label>
+                <input type="file" id="siteImg" accept="image/*" required>
+                <div class="preview-img">
+                    <img id="preview" src="" alt="图片预览">
+                    <span>上传后预览图片</span>
+                </div>
+            </div>
+
+            <button id="addSiteBtn">添加网站</button>
+        </div>
+    </div>
+
+    <script>
+        // 1. 获取页面元素
+        const siteName = document.getElementById('siteName');
+        const siteUrl = document.getElementById('siteUrl');
+        const siteImg = document.getElementById('siteImg');
+        const preview = document.getElementById('preview');
+        const addSiteBtn = document.getElementById('addSiteBtn');
+        const siteList = document.getElementById('siteList');
+
+        // 2. 图片预览功能
+        siteImg.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // 将文件转为base64格式（方便保存和展示）
+                const reader = new FileReader();
+                reader.onload = function() {
+                    preview.src = reader.result;
+                    preview.style.display = 'block';
+                    preview.nextElementSibling.style.display = 'none';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 3. 从本地存储获取网站列表
+        function getSiteList() {
+            const list = localStorage.getItem('myWebSites');
+            return list ? JSON.parse(list) : [];
+        }
+
+        // 4. 渲染网站列表到页面
+        function renderSiteList() {
+            const sites = getSiteList();
+            if (sites.length === 0) {
+                siteList.innerHTML = '<div class="empty-tip">暂无收藏网站，添加后将展示在这里</div>';
+                return;
+            }
+
+            let html = '';
+            sites.forEach(site => {
+                html += `
+                    <div class="site-card" onclick="window.open('${site.url}', '_blank')">
+                        <!-- 删除按钮，绑定deleteSite函数并传入网站ID -->
+                        <button class="delete-btn" onclick="event.stopPropagation(); deleteSite(${site.id})">×</button>
+                        <img class="card-img" src="${site.img}" alt="${site.name}">
+                        <div class="card-content">
+                            <h3 class="card-title">${site.name}</h3>
+                            <p class="card-url">${site.url}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            siteList.innerHTML = html;
+        }
+
+        // 5. 添加网站到本地存储并渲染
+        function addSite() {
+            const name = siteName.value.trim();
+            const url = siteUrl.value.trim();
+            const img = preview.src;
+
+            // 表单验证
+            if (!name) {
+                alert('请输入网站名称！');
+                return;
+            }
+            if (!url) {
+                alert('请输入网站网址！');
+                return;
+            }
+            if (!img || img === '') {
+                alert('请上传网站配图！');
+                return;
+            }
+
+            // 构造网站对象
+            const newSite = {
+                id: Date.now(), // 用时间戳作为唯一ID，用于删除识别
+                name,
+                url,
+                img
+            };
+
+            // 获取现有列表并添加新网站
+            const sites = getSiteList();
+            sites.unshift(newSite); // 新增网站放在列表最前面
+
+            // 保存到本地存储
+            localStorage.setItem('myWebSites', JSON.stringify(sites));
+
+            // 重置表单和预览图
+            resetForm();
+
+            // 重新渲染列表
+            renderSiteList();
+
+            alert('网站添加成功！');
+        }
+
+        // 6. 删除指定网站
+        function deleteSite(siteId) {
+            // 弹出确认框，防止误删
+            const isConfirm = confirm('确定要删除这个网站收藏吗？删除后无法恢复！');
+            if (!isConfirm) return;
+
+            // 获取现有列表，过滤掉要删除的网站（根据ID匹配）
+            let sites = getSiteList();
+            sites = sites.filter(site => site.id !== siteId);
+
+            // 保存更新后的列表到本地存储
+            localStorage.setItem('myWebSites', JSON.stringify(sites));
+
+            // 重新渲染列表
+            renderSiteList();
+
+            alert('网站删除成功！');
+        }
+
+        // 7. 重置表单
+        function resetForm() {
+            siteName.value = '';
+            siteUrl.value = '';
+            siteImg.value = '';
+            preview.src = '';
+            preview.style.display = 'none';
+            preview.nextElementSibling.style.display = 'block';
+        }
+
+        // 8. 绑定添加按钮点击事件
+        addSiteBtn.addEventListener('click', addSite);
+
+        // 9. 页面加载完成后渲染列表
+        window.onload = function() {
+            renderSiteList();
+        };
+    </script>
+</body>
+</html>

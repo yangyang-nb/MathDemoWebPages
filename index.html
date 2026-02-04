@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>网站收藏夹 - TXT批量导入</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Microsoft YaHei", sans-serif;
+    }
+
+    body {
+      background-color: #f5f5f5;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 2rem;
+    }
+
+    .form-container {
+      display: flex;
+      gap: 2rem;
+      margin-top: 3rem;
+      flex-wrap: wrap;
+    }
+
+    .site-form,
+    .batch-form {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      flex: 1;
+      min-width: 400px;
+    }
+
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.4rem;
+      color: #333;
+      font-weight: 500;
+    }
+
+    input[type="text"],
+    input[type="url"],
+    input[type="file"] {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+
+    button {
+      padding: 0.8rem 2rem;
+      border: none;
+      border-radius: 6px;
+      background: #3498db;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .batch-btn {
+      background: #2ecc71;
+    }
+
+    .tip-text {
+      font-size: 0.85rem;
+      color: #666;
+      background: #f8f9fa;
+      padding: 0.6rem;
+      border-radius: 4px;
+      margin-top: 0.5rem;
+    }
+
+    .site-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    .site-card {
+      background: #fff;
+      border-radius: 12px;
+      width: 600px;
+      height: 200px;
+      max-width: 90vw;
+      display: flex;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .card-img {
+      width: 250px;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .card-content {
+      flex: 1;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .card-title {
+      font-size: 1.5rem;
+      color: #2c3e50;
+      margin-bottom: 0.6rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-url {
+      font-size: 0.95rem;
+      color: #7f8c8d;
+      word-break: break-all;
+    }
+
+    .delete-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #e74c3c;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    .site-card:hover .delete-btn {
+      display: flex;
+    }
+
+    .empty-tip {
+      width: 600px;
+      max-width: 90vw;
+      text-align: center;
+      color: #999;
+      padding: 3rem 0;
+    }
+
+    @media (max-width: 900px) {
+      .form-container {
+        flex-direction: column;
+      }
+      .site-form, .batch-form {
+        min-width: 100%;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .site-card {
+        flex-direction: column;
+        height: auto;
+      }
+      .card-img {
+        width: 100%;
+        height: 180px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>网站收藏夹</h1>
+
+    <div class="site-list" id="siteList">
+      <div class="empty-tip">暂无名片，可单个添加或导入txt文件</div>
+    </div>
+
+    <div class="form-container">
+      <!-- 单个添加 -->
+      <div class="site-form">
+        <h2 style="margin-bottom:1rem;font-size:1.3rem;">单个添加</h2>
+        <div class="form-group">
+          <label>网站名称</label>
+          <input type="text" id="siteName">
+        </div>
+        <div class="form-group">
+          <label>网址</label>
+          <input type="url" id="siteUrl">
+        </div>
+        <div class="form-group">
+          <label>图片地址(网络URL)</label>
+          <input type="text" id="siteImgUrl">
+        </div>
+        <button id="addBtn">添加</button>
+      </div>
+
+      <!-- 批量导入txt -->
+      <div class="batch-form">
+        <h2 style="margin-bottom:1rem;font-size:1.3rem;">批量导入 .txt</h2>
+        <div class="form-group">
+          <label>选择文本文件</label>
+          <input type="file" id="txtFile" accept=".txt">
+          <div class="tip-text">
+            格式：一行一条，name|url|img<br>
+            示例：百度|https://www.baidu.com|图片URL
+          </div>
+        </div>
+        <button class="batch-btn" id="importTxtBtn">导入文件</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 存储键
+    const STORAGE_KEY = 'myWebSites';
+
+    // 获取列表
+    function getSites() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    // 保存列表
+    function saveSites(sites) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(sites));
+    }
+
+    // 渲染
+    function render() {
+      const list = getSites();
+      const el = document.getElementById('siteList');
+      if (list.length === 0) {
+        el.innerHTML = `<div class="empty-tip">暂无名片，可单个添加或导入txt文件</div>`;
+        return;
+      }
+      el.innerHTML = list.map(item => `
+        <div class="site-card" onclick="window.open('${item.url}','_blank')">
+          <button class="delete-btn" onclick="del(${item.id});event.stopPropagation()">×</button>
+          <img src="${item.img}" class="card-img">
+          <div class="card-content">
+            <div class="card-title">${item.name}</div>
+            <div class="card-url">${item.url}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 删除
+    window.del = function (id) {
+      if (!confirm('确定删除？')) return;
+      const list = getSites().filter(item => item.id !== id);
+      saveSites(list);
+      render();
+    }
+
+    // 单个添加
+    document.getElementById('addBtn').addEventListener('click', () => {
+      const name = document.getElementById('siteName').value.trim();
+      const url = document.getElementById('siteUrl').value.trim();
+      const img = document.getElementById('siteImgUrl').value.trim();
+      if (!name || !url || !img) {
+        alert('请填写完整');
+        return;
+      }
+      const list = getSites();
+      list.unshift({ id: Date.now(), name, url, img });
+      saveSites(list);
+      document.getElementById('siteName').value = '';
+      document.getElementById('siteUrl').value = '';
+      document.getElementById('siteImgUrl').value = '';
+      render();
+      alert('添加成功');
+    });
+
+    // ========== 核心：TXT文件导入 ==========
+    document.getElementById('importTxtBtn').addEventListener('click', async () => {
+      const fileInput = document.getElementById('txtFile');
+      const file = fileInput.files[0];
+      if (!file) {
+        alert('请先选择 .txt 文件');
+        return;
+      }
+
+      const text = await file.text();
+      const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      const imported = [];
+
+      for (const line of lines) {
+        const parts = line.split('|').map(p => p.trim());
+        if (parts.length >= 3) {
+          const [name, url, img] = parts;
+          if (name && url && img) {
+            imported.push({ id: Date.now() + Math.random(), name, url, img });
+          }
+        }
+      }
+
+      if (imported.length === 0) {
+        alert('未识别到有效记录，请检查文件格式');
+        return;
+      }
+
+      const list = getSites();
+      saveSites([...imported, ...list]);
+      fileInput.value = '';
+      render();
+      alert(`导入成功，共 ${imported.length} 条`);
+    });
+
+    // 初始化
+    render();
+  </script>
+</body>
+</html>
